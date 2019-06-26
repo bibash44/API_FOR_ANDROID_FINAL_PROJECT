@@ -14,6 +14,17 @@ app.use(cors());
 require('./DB_CONNECTION/DB_CONNECTION');
 const user = require('./MODELS/user');
 
+var nodemailer = require('nodemailer');
+
+
+var transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: 'bibashkatel4@gmail.com',
+        pass: 'tejkmlnlqekzbfyq'
+    }
+});
+
 
 
 app.post('/insert_user', function (req, res) {
@@ -21,6 +32,32 @@ app.post('/insert_user', function (req, res) {
     var fullname = req.body.fullname;
     var phone = req.body.phone;
     var password = req.body.password;
+    var usertype="normal";
+
+    var mailOptions = {
+        from: 'bibashkatel4@gmail.com',
+        to: Useremail,
+        subject: 'Booking Made ',
+        text: '',
+        html:
+            '<div class="container-fluid main-container">' +
+            'New Account created <br> <br>' +
+
+            '<hr>' +
+
+            '<h1>User Details</h1>' +
+            '<hr>' +
+            '<p> Name : <b>' + fullname + '</b> </p>' +
+            '<p> Email : <b>' + Useremail + '</b> </p>' +
+            '<p> Phone : <b>' + phone + '</b> </p>' +
+            '<p> Usertype : <b>' + usertype + '</b> </p>' +
+
+            '<footer class="conteiner-fluid no-gutters"> <br> <br> <hr>' +
+            '<div class="w-100 footer-heading"> TICKET NOW &copy; Copyright all right reserved </div>' +
+            '</footer>' +
+            '</div>'
+    };
+
 
     user.findOne({
         email: Useremail
@@ -32,12 +69,21 @@ app.post('/insert_user', function (req, res) {
                 fullname: fullname,
                 email: Useremail,
                 phone: phone,
-                password: password
+                password: password,
+                usertype:usertype
             })
 
-            console.log(fullname)
-
             ADD_NEW_USER.save().then(function () {
+
+                 // Send mail to the user
+                 transporter.sendMail(mailOptions, function (error, info) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        console.log('Email sent: ' + info.response);
+                    }
+                });
+
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({
                     registered: true
